@@ -385,6 +385,14 @@
                           },
                           {
                             "key": {
+                              "symbol": "fulfilled_quantity_ml"
+                            },
+                            "val": {
+                              "u32": 0
+                            }
+                          },
+                          {
+                            "key": {
                               "symbol": "fulfillment_timestamp"
                             },
                             "val": "void"

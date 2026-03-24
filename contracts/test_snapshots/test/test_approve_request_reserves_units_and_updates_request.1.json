@@ -77,12 +77,12 @@
                 {
                   "vec": [
                     {
-                      "symbol": "BPositive"
+                      "symbol": "APositive"
                     }
                   ]
                 },
                 {
-                  "u32": 500
+                  "u32": 300
                 },
                 {
                   "u64": 604800
@@ -104,16 +104,26 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
-              "function_name": "allocate_blood",
+              "function_name": "register_blood",
               "args": [
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
                 },
                 {
-                  "u64": 1
+                  "vec": [
+                    {
+                      "symbol": "APositive"
+                    }
+                  ]
                 },
                 {
-                  "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                  "u32": 250
+                },
+                {
+                  "u64": 604800
+                },
+                {
+                  "symbol": "donor2"
                 }
               ]
             }
@@ -137,7 +147,7 @@
                 {
                   "vec": [
                     {
-                      "symbol": "BPositive"
+                      "symbol": "APositive"
                     }
                   ]
                 },
@@ -147,7 +157,7 @@
                 {
                   "vec": [
                     {
-                      "symbol": "Critical"
+                      "symbol": "Urgent"
                     }
                   ]
                 },
@@ -155,7 +165,7 @@
                   "u64": 3600
                 },
                 {
-                  "string": "ER"
+                  "string": "Ward A"
                 }
               ]
             }
@@ -164,8 +174,6 @@
         }
       ]
     ],
-    [],
-    [],
     [
       [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
@@ -173,7 +181,7 @@
           "function": {
             "contract_fn": {
               "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
-              "function_name": "fulfill_request",
+              "function_name": "approve_request",
               "args": [
                 {
                   "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
@@ -185,6 +193,9 @@
                   "vec": [
                     {
                       "u64": 1
+                    },
+                    {
+                      "u64": 2
                     }
                   ]
                 }
@@ -195,6 +206,8 @@
         }
       ]
     ],
+    [],
+    [],
     []
   ],
   "ledger": {
@@ -408,7 +421,7 @@
                 },
                 "durability": "persistent",
                 "val": {
-                  "u64": 2
+                  "u64": 3
                 }
               }
             },
@@ -484,7 +497,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "BPositive"
+                                  "symbol": "APositive"
                                 }
                               ]
                             }
@@ -502,7 +515,7 @@
                               "symbol": "delivery_address"
                             },
                             "val": {
-                              "string": "ER"
+                              "string": "Ward A"
                             }
                           },
                           {
@@ -510,16 +523,14 @@
                               "symbol": "fulfilled_quantity_ml"
                             },
                             "val": {
-                              "u32": 500
+                              "u32": 550
                             }
                           },
                           {
                             "key": {
                               "symbol": "fulfillment_timestamp"
                             },
-                            "val": {
-                              "u64": 0
-                            }
+                            "val": "void"
                           },
                           {
                             "key": {
@@ -561,6 +572,9 @@
                               "vec": [
                                 {
                                   "u64": 1
+                                },
+                                {
+                                  "u64": 2
                                 }
                               ]
                             }
@@ -572,7 +586,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Fulfilled"
+                                  "symbol": "Approved"
                                 }
                               ]
                             }
@@ -584,7 +598,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Critical"
+                                  "symbol": "Urgent"
                                 }
                               ]
                             }
@@ -634,7 +648,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "BPositive"
+                                  "symbol": "APositive"
                                 }
                               ]
                             }
@@ -644,7 +658,7 @@
                               "symbol": "delivery_address"
                             },
                             "val": {
-                              "string": "ER"
+                              "string": "Ward A"
                             }
                           },
                           {
@@ -678,7 +692,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Critical"
+                                  "symbol": "Urgent"
                                 }
                               ]
                             }
@@ -750,7 +764,7 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "BPositive"
+                                  "symbol": "APositive"
                                 }
                               ]
                             }
@@ -759,9 +773,7 @@
                             "key": {
                               "symbol": "delivery_timestamp"
                             },
-                            "val": {
-                              "u64": 0
-                            }
+                            "val": "void"
                           },
                           {
                             "key": {
@@ -800,7 +812,7 @@
                               "symbol": "quantity"
                             },
                             "val": {
-                              "u32": 500
+                              "u32": 300
                             }
                           },
                           {
@@ -826,7 +838,124 @@
                             "val": {
                               "vec": [
                                 {
-                                  "symbol": "Delivered"
+                                  "symbol": "Reserved"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "transfer_timestamp"
+                            },
+                            "val": "void"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "key": {
+                        "u64": 2
+                      },
+                      "val": {
+                        "map": [
+                          {
+                            "key": {
+                              "symbol": "allocation_timestamp"
+                            },
+                            "val": {
+                              "u64": 0
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "bank_id"
+                            },
+                            "val": {
+                              "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "blood_type"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "APositive"
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "delivery_timestamp"
+                            },
+                            "val": "void"
+                          },
+                          {
+                            "key": {
+                              "symbol": "donor_id"
+                            },
+                            "val": {
+                              "symbol": "donor2"
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "expiration_date"
+                            },
+                            "val": {
+                              "u64": 604800
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "id"
+                            },
+                            "val": {
+                              "u64": 2
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "location"
+                            },
+                            "val": {
+                              "symbol": "BANK"
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "quantity"
+                            },
+                            "val": {
+                              "u32": 250
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "recipient_hospital"
+                            },
+                            "val": {
+                              "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHK3M"
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "registration_timestamp"
+                            },
+                            "val": {
+                              "u64": 0
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "status"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "symbol": "Reserved"
                                 }
                               ]
                             }
@@ -989,6 +1118,104 @@
                           }
                         }
                       ]
+                    }
+                  ]
+                }
+              }
+            },
+            "ext": "v0"
+          },
+          4095
+        ]
+      ],
+      [
+        {
+          "contract_data": {
+            "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
+            "key": {
+              "vec": [
+                {
+                  "symbol": "HISTORY"
+                },
+                {
+                  "u64": 2
+                }
+              ]
+            },
+            "durability": "persistent"
+          }
+        },
+        [
+          {
+            "last_modified_ledger_seq": 0,
+            "data": {
+              "contract_data": {
+                "ext": "v0",
+                "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFCT4",
+                "key": {
+                  "vec": [
+                    {
+                      "symbol": "HISTORY"
+                    },
+                    {
+                      "u64": 2
+                    }
+                  ]
+                },
+                "durability": "persistent",
+                "val": {
+                  "vec": [
+                    {
+                      "map": [
+                        {
+                          "key": {
+                            "symbol": "actor"
+                          },
+                          "val": {
+                            "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4"
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "blood_unit_id"
+                          },
+                          "val": {
+                            "u64": 2
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "new_status"
+                          },
+                          "val": {
+                            "vec": [
+                              {
+                                "symbol": "Available"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "old_status"
+                          },
+                          "val": {
+                            "vec": [
+                              {
+                                "symbol": "Available"
+                              }
+                            ]
+                          }
+                        },
+                        {
+                          "key": {
+                            "symbol": "timestamp"
+                          },
+                          "val": {
+                            "u64": 0
+                          }
+                        }
+                      ]
                     },
                     {
                       "map": [
@@ -1005,7 +1232,7 @@
                             "symbol": "blood_unit_id"
                           },
                           "val": {
-                            "u64": 1
+                            "u64": 2
                           }
                         },
                         {
@@ -1015,7 +1242,7 @@
                           "val": {
                             "vec": [
                               {
-                                "symbol": "Delivered"
+                                "symbol": "Reserved"
                               }
                             ]
                           }
@@ -1027,7 +1254,7 @@
                           "val": {
                             "vec": [
                               {
-                                "symbol": "Reserved"
+                                "symbol": "Available"
                               }
                             ]
                           }
