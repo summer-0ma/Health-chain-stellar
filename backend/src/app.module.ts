@@ -13,6 +13,7 @@ import { RidersModule } from './riders/riders.module';
 import { DispatchModule } from './dispatch/dispatch.module';
 import { MapsModule } from './maps/maps.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ReputationModule } from './reputation/reputation.module';
 import { BullModule } from '@nestjs/bullmq';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from './auth/guards/permissions.guard';
@@ -59,6 +60,7 @@ import { PermissionsGuard } from './auth/guards/permissions.guard';
       }),
     }),
     NotificationsModule,
+    ReputationModule,
   ],
   controllers: [AppController],
   providers: [
