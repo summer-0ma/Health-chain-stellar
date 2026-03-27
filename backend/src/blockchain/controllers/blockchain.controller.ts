@@ -16,6 +16,8 @@ import {
 import { Request } from 'express';
 import { createHmac, timingSafeEqual } from 'crypto';
 
+import { ConfigService } from '@nestjs/config';
+
 import { AdminGuard } from '../guards/admin.guard';
 import { QueueMetricsService } from '../services/queue-metrics.service';
 import { SorobanService } from '../services/soroban.service';
@@ -31,7 +33,11 @@ import type {
 export class BlockchainController {
   private readonly logger = new Logger(BlockchainController.name);
 
-  constructor(private sorobanService: SorobanService) {}
+  constructor(
+    private sorobanService: SorobanService,
+    private configService: ConfigService,
+    private queueMetricsService: QueueMetricsService,
+  ) {}
 
   /**
    * Submit a transaction to the Soroban queue.
@@ -77,7 +83,7 @@ export class BlockchainController {
       throw new UnauthorizedException('Missing signature');
     }
 
-    const secret = process.env.BLOCKCHAIN_CALLBACK_SECRET;
+    const secret = this.configService.get<string>('BLOCKCHAIN_CALLBACK_SECRET');
     if (!secret) {
       this.logger.error('BLOCKCHAIN_CALLBACK_SECRET is not configured');
       throw new BadRequestException('Server misconfiguration');
