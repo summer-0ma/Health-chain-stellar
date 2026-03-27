@@ -12,6 +12,7 @@ import {
   UnauthorizedException,
   ConflictException,
   Req,
+  Query,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { createHmac, timingSafeEqual } from 'crypto';
@@ -19,6 +20,7 @@ import { createHmac, timingSafeEqual } from 'crypto';
 import { AdminGuard } from '../guards/admin.guard';
 import { SorobanService } from '../services/soroban.service';
 import { BlockchainCallbackDto } from '../dto/blockchain-callback.dto';
+import { ReplayDlqDto } from '../dto/replay-dlq.dto';
 
 import type {
   SorobanTxJob,
@@ -180,5 +182,44 @@ export class BlockchainController {
     @Param('jobId') jobId: string,
   ): Promise<SorobanTxResult | null> {
     return this.sorobanService.getJobStatus(jobId);
+  }
+
+  /**
+   * Replay failed jobs from DLQ with safety guardrails (admin only).
+   *
+   * Protected by AdminGuard - requires admin authentication.
+   * Supports dry-run mode to preview replay without executing.
+   * Batch size limited to 100 jobs per request.
+   *
+   * @param replayDto - Replay options (dryRun, batchSize, offset)
+   * @returns Replay metrics with success/error counts
+   * @throws 403 if not authenticated as admin
+   */
+  @Post('dlq/replay')
+  @UseGuards(AdminGuard)
+  @HttpCode(HttpStatus.OK)
+  async replayDlqJobs(@Body() replayDto: ReplayDlqDto): Promise<{
+    dryRun: boolean;
+    totalInspected: number;
+    replayable: number;
+    replayed: number;
+    skipped: number;
+    errors: Array<{ jobId: string; reason: string }>;
+  }> {
+    this.logger.log(
+      `[DLQ Replay] Admin initiated replay: dryRun=${replayDto.dryRun}, batchSize=${replayDto.batchSize}, offset=${replayDto.offset}`,
+    );
+
+    const result = await this.sorobanService.replayDlqJobs({
+      dryRun: replayDto.dryRun,
+      batchSize: replayDto.batchSize,
+      offset: replayDto.offset,
+    });
+
+    this.logger.log(
+      `[DLQ Replay] Result: replayed=${result.replayed}, errors=${result.errors.length}`,
+    );
+
+    return result;
   }
 }
