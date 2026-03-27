@@ -4,16 +4,11 @@ import {
   Logger,
   Optional,
 } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { Repository } from 'typeorm';
 
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import {
-  PermissionsService,
-  UserContext,
-} from '../../auth/permissions.service';
-import { NotificationsService } from '../../notifications/notifications.service';
-import { NotificationChannel } from '../../notifications/enums/notification-channel.enum';
 import {
   OrderCancelledEvent,
   OrderConfirmedEvent,
@@ -22,17 +17,19 @@ import {
   OrderInTransitEvent,
   OrderStatusUpdatedEvent,
 } from '../../events';
+import { InventoryService } from '../../inventory/inventory.service';
+import { NotificationChannel } from '../../notifications/enums/notification-channel.enum';
+import { NotificationsService } from '../../notifications/notifications.service';
 import { BlockchainEvent } from '../../soroban/entities/blockchain-event.entity';
-
+import { UpdateRequestStatusDto } from '../dto/update-request-status.dto';
 import { OrderEntity } from '../entities/order.entity';
 import { OrderEventType } from '../enums/order-event-type.enum';
 import { OrderStatus } from '../enums/order-status.enum';
 import { RequestStatusAction } from '../enums/request-status-action.enum';
 import { OrdersGateway } from '../gateways/orders.gateway';
 import { OrderStateMachine } from '../state-machine/order-state-machine';
+
 import { OrderEventStoreService } from './order-event-store.service';
-import { UpdateRequestStatusDto } from '../dto/update-request-status.dto';
-import { InventoryService } from '../../inventory/inventory.service';
 
 const STATUS_TO_EVENT_TYPE: Record<OrderStatus, OrderEventType> = {
   [OrderStatus.PENDING]: OrderEventType.ORDER_CREATED,
@@ -66,6 +63,7 @@ export class RequestStatusService {
     dto: UpdateRequestStatusDto,
     actorId?: string,
     actorRole?: string,
+    manager?: EntityManager,
   ): Promise<{ nextStatus: OrderStatus; eventType: OrderEventType }> {
     const nextStatus = this.resolveNextStatus(dto);
     const previousStatus = order.status;
@@ -79,18 +77,35 @@ export class RequestStatusService {
     this.stateMachine.transition(previousStatus, nextStatus);
 
     const eventType = STATUS_TO_EVENT_TYPE[nextStatus];
-    await this.eventStore.persistEvent({
-      orderId: order.id,
-      eventType,
-      payload: {
-        previousStatus,
-        newStatus: nextStatus,
-        action: dto.action ?? null,
-        reason: dto.reason ?? null,
-        comment: dto.comment ?? null,
-      },
-      actorId,
-    });
+
+    // Use the provided manager (transactional) or fall back to the default repo manager.
+    if (manager) {
+      await this.eventStore.persistEventWithManager(manager, {
+        orderId: order.id,
+        eventType,
+        payload: {
+          previousStatus,
+          newStatus: nextStatus,
+          action: dto.action ?? null,
+          reason: dto.reason ?? null,
+          comment: dto.comment ?? null,
+        },
+        actorId,
+      });
+    } else {
+      await this.eventStore.persistEvent({
+        orderId: order.id,
+        eventType,
+        payload: {
+          previousStatus,
+          newStatus: nextStatus,
+          action: dto.action ?? null,
+          reason: dto.reason ?? null,
+          comment: dto.comment ?? null,
+        },
+        actorId,
+      });
+    }
 
     if (
       nextStatus === OrderStatus.CANCELLED &&
@@ -173,19 +188,40 @@ export class RequestStatusService {
 
   private enforceActionRole(
     action: RequestStatusAction | undefined,
-    actor: UserContext,
+    actorRole?: string,
   ): void {
-    if (!action) return;
-
-    if (
-      action === RequestStatusAction.APPROVE ||
-      action === RequestStatusAction.REJECT
-    ) {
-      this.permissionsService.assertCanApproveRequest(actor);
+    if (!action || !actorRole) {
+      return;
     }
 
-    if (action === RequestStatusAction.FULFILL) {
-      this.permissionsService.assertCanFulfillRequest(actor);
+    const normalizedRole = actorRole.toUpperCase();
+
+    const approvalRoles = new Set(['ADMIN', 'BLOOD_BANK', 'BLOOD_BANK_STAFF']);
+    const fulfillmentRoles = new Set([
+      'ADMIN',
+      'RIDER',
+      'DISPATCHER',
+      'BLOOD_BANK',
+      'BLOOD_BANK_STAFF',
+    ]);
+
+    if (
+      (action === RequestStatusAction.APPROVE ||
+        action === RequestStatusAction.REJECT) &&
+      !approvalRoles.has(normalizedRole)
+    ) {
+      throw new BadRequestException(
+        `Role '${actorRole}' is not allowed to ${action.toLowerCase()} requests.`,
+      );
+    }
+
+    if (
+      action === RequestStatusAction.FULFILL &&
+      !fulfillmentRoles.has(normalizedRole)
+    ) {
+      throw new BadRequestException(
+        `Role '${actorRole}' is not allowed to fulfill requests.`,
+      );
     }
   }
 
@@ -254,14 +290,19 @@ export class RequestStatusService {
     nextStatus: OrderStatus,
     actorId?: string,
     reason?: string,
+    manager?: EntityManager,
   ): Promise<void> {
     if (!this.blockchainEventRepo) {
       return;
     }
 
     try {
+      const repo = manager
+        ? manager.getRepository(BlockchainEvent)
+        : this.blockchainEventRepo;
+
       const txHash = `order-status-${order.id}-${Date.now()}`;
-      const entity = this.blockchainEventRepo.create({
+      const entity = repo.create({
         eventType: 'ORDER_STATUS_UPDATED',
         transactionHash: txHash,
         eventData: {
@@ -275,7 +316,7 @@ export class RequestStatusService {
         processed: false,
       });
 
-      await this.blockchainEventRepo.save(entity);
+      await repo.save(entity);
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       this.logger.warn(

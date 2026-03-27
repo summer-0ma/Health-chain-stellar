@@ -1,11 +1,9 @@
 import {
   IsISO8601,
   IsIn,
-  IsInt,
   IsNotEmpty,
   IsOptional,
   IsString,
-  Min,
 } from 'class-validator';
 
 export class BlockchainCallbackDto {
