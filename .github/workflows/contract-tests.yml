@@ -166,6 +166,12 @@ jobs:
           echo "  - Type changes detected immediately"
           echo "  - Required field changes detected immediately"
           echo "  - API status code changes detected immediately"
+          echo ""
+          echo "ℹ️  Migration Validation:"
+          echo "  - Migration files are NOT required for PRs (see #256)"
+          echo "  - Schema changes are validated via response contracts"
+          echo "  - Migrations are created before production deployment"
+          echo "  - See backend/MIGRATION_POLICY.md for details"
 
       - name: Fail on Contract Violations
         if: failure()
