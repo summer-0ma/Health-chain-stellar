@@ -1726,6 +1726,13 @@ impl HealthChainContract {
             payee,
             amount,
             asset,
+            fee_structure: FeeStructure {
+                policy_id: Symbol::new(&env, "default_fee_policy"),
+                service_fee: 0,
+                network_fee: 0,
+                performance_bonus: 0,
+                fixed_fee: 0,
+            },
             status: PaymentStatus::Pending,
             escrow_released_at: None,
         };
@@ -3119,6 +3126,7 @@ mod test {
             let result = client.register_blood(
                 &bank,
                 &blood_type,
+                &BloodComponent::WholeBlood,
                 &450,
                 &expiration,
                 &Some(symbol_short!("donor")),
@@ -4729,7 +4737,14 @@ mod test {
         let current_time = env.ledger().timestamp();
         let expiration = current_time + (7 * 86400);
         let unit_id =
-            client.register_blood(&bank, &BloodType::OPositive, &450, &expiration, &None);
+            client.register_blood(
+                &bank,
+                &BloodType::OPositive,
+                &BloodComponent::WholeBlood,
+                &450,
+                &expiration,
+                &None,
+            );
         client.allocate_blood(&bank, &unit_id, &hospital);
 
         // Current custodian (bank) can initiate transfer
@@ -4753,7 +4768,14 @@ mod test {
         let expiration = current_time + (7 * 86400);
         // bank_a registers and allocates the unit — bank_a is the custodian
         let unit_id =
-            client.register_blood(&bank_a, &BloodType::OPositive, &450, &expiration, &None);
+            client.register_blood(
+                &bank_a,
+                &BloodType::OPositive,
+                &BloodComponent::WholeBlood,
+                &450,
+                &expiration,
+                &None,
+            );
         client.allocate_blood(&bank_a, &unit_id, &hospital);
 
         // bank_b is authorized but is NOT the custodian — must fail
@@ -4774,7 +4796,14 @@ mod test {
         let current_time = env.ledger().timestamp();
         let expiration = current_time + (7 * 86400);
         let unit_id =
-            client.register_blood(&bank, &BloodType::OPositive, &450, &expiration, &None);
+            client.register_blood(
+                &bank,
+                &BloodType::OPositive,
+                &BloodComponent::WholeBlood,
+                &450,
+                &expiration,
+                &None,
+            );
         client.allocate_blood(&bank, &unit_id, &hospital);
 
         // Completely unregistered address — must fail with Unauthorized, not NotCurrentCustodian
@@ -4799,6 +4828,7 @@ mod test {
         let unit_id = client.register_blood(
             bank,
             &BloodType::OPositive,
+            &BloodComponent::WholeBlood,
             &450,
             &expiration,
             &Some(symbol_short!("donor")),
