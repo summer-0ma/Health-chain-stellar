@@ -3,8 +3,8 @@ import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerStorageRedisService } from '@nest-lab/throttler-storage-redis';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -45,6 +45,7 @@ import { TransparencyModule } from './transparency/transparency.module';
 import { UserActivityModule } from './user-activity/user-activity.module';
 import { ActivityLoggingInterceptor } from './user-activity/interceptors/activity-logging.interceptor';
 import { UsersModule } from './users/users.module';
+import { ReportingModule } from './reporting/reporting.module';
 
 @Module({
   imports: [
@@ -118,6 +119,7 @@ import { UsersModule } from './users/users.module';
     BatchImportModule,
     WorkflowModule,
     SurgeSimulationModule,
+    ReportingModule,
   ],
   controllers: [AppController],
   providers: [
