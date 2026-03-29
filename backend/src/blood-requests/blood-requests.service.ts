@@ -7,6 +7,7 @@ import { Repository } from 'typeorm';
 
 import { UserRole } from '../auth/enums/user-role.enum';
 import { PermissionsService } from '../auth/permissions.service';
+import { LIFEBANK_REQUESTS_METHODS } from '../blockchain/contracts/lifebank-contracts';
 import { SorobanService } from '../blockchain/services/soroban.service';
 import { CompensationService } from '../common/compensation/compensation.service';
 import {
@@ -141,7 +142,7 @@ export class BloodRequestsService {
       let transactionHash: string;
       try {
         const chainResult = await this.sorobanService.submitTransactionAndWait({
-          contractMethod: 'create_blood_request',
+          contractMethod: LIFEBANK_REQUESTS_METHODS.createRequest,
           args: [requestNumber, dto.hospitalId, JSON.stringify(chainPayload)],
           idempotencyKey: `blood-request:${requestNumber}`,
           metadata: { requestNumber, hospitalId: dto.hospitalId },
@@ -150,7 +151,7 @@ export class BloodRequestsService {
       } catch (err) {
         // Blockchain failure is irrecoverable — inventory must be rolled back
         const irrecoverableErr = new BloodRequestIrrecoverableError(
-          `Soroban create_blood_request failed for ${requestNumber}`,
+          `Soroban ${LIFEBANK_REQUESTS_METHODS.createRequest} failed for ${requestNumber}`,
           {
             requestNumber,
             hospitalId: dto.hospitalId,
