@@ -1,8 +1,10 @@
 import { randomBytes } from 'crypto';
 
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { InjectQueue } from '@nestjs/bullmq';
 import { InjectRepository } from '@nestjs/typeorm';
 
+import { Queue } from 'bullmq';
 import { Repository } from 'typeorm';
 
 import { UserRole } from '../auth/enums/user-role.enum';
@@ -24,6 +26,12 @@ import {
 import { BloodRequestEntity, RequestUrgency } from './entities/blood-request.entity';
 import { BloodRequestStatus } from './enums/blood-request-status.enum';
 import { TriageScoringService } from './services/triage-scoring.service';
+import {
+  BLOOD_REQUEST_QUEUE,
+  QUEUE_PRIORITY,
+  RequestUrgency,
+} from './enums/request-urgency.enum';
+import { BloodRequestJobData } from './processors/blood-request.processor';
 
 type RequestUser = { id: string; role: string; email: string };
 
@@ -42,6 +50,8 @@ export class BloodRequestsService {
     private readonly compensationService: CompensationService,
     private readonly permissionsService: PermissionsService,
     private readonly triageScoringService: TriageScoringService,
+    @InjectQueue(BLOOD_REQUEST_QUEUE)
+    private readonly bloodRequestQueue: Queue<BloodRequestJobData>,
   ) {}
 
   private assertHospitalAuthorization(
@@ -269,6 +279,20 @@ export class BloodRequestsService {
       });
 
       const saved = await this.bloodRequestRepo.save(parent);
+
+      // Enqueue for priority-based processing
+      const urgency = (saved.urgency as unknown as RequestUrgency) ?? RequestUrgency.ROUTINE;
+      await this.bloodRequestQueue.add(
+        'process-request',
+        { requestId: saved.id, urgency, enqueuedAt: Date.now() },
+        {
+          priority: QUEUE_PRIORITY[urgency],
+          attempts: 3,
+          backoff: { type: 'exponential', delay: 5000 },
+          removeOnComplete: true,
+          removeOnFail: false,
+        },
+      );
 
       await this.sendCreationEmail(user.email, saved);
 
