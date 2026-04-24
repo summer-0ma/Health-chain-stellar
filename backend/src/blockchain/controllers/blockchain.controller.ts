@@ -319,7 +319,8 @@ export class BlockchainController {
 
     for (const record of failed) {
       try {
-        const job = record.payload as unknown as import('../types/soroban-tx.types').SorobanTxJob;
+        const job =
+          record.payload as unknown as import('../types/soroban-tx.types').SorobanTxJob;
 
         // Resubmit via DLQ replay (clears idempotency key internally)
         await this.sorobanService.replayDlqJobs({ batchSize: 1 });

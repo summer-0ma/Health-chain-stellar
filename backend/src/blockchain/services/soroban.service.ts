@@ -1,4 +1,4 @@
-import { InjectQueue } from '@nestjs/bull';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 
 import { assertSorobanTxJob } from '../../common/guards/on-chain-id.guard';
@@ -12,8 +12,9 @@ import {
 
 import { ConfirmationService } from './confirmation.service';
 import { IdempotencyService } from './idempotency.service';
+import { QueueMetricsService } from './queue-metrics.service';
 
-import type { Queue } from 'bull';
+import type { Queue } from 'bullmq';
 
 @Injectable()
 export class SorobanService {
@@ -28,6 +29,7 @@ export class SorobanService {
     private idempotencyService: IdempotencyService,
     private deduplicationPlugin: JobDeduplicationPlugin,
     private confirmationService: ConfirmationService,
+    private queueMetricsService: QueueMetricsService,
   ) {}
 
   /**
@@ -71,7 +73,7 @@ export class SorobanService {
     const maxRetries = normalizedJob.maxRetries ?? this.DEFAULT_MAX_RETRIES;
 
     // Add job to queue with exponential backoff and jitter
-    const queueJob = await this.txQueue.add(normalizedJob, {
+    const queueJob = await this.txQueue.add(job.contractMethod, job, {
       attempts: maxRetries,
       backoff: {
         type: 'exponential',
@@ -96,7 +98,9 @@ export class SorobanService {
   ): Promise<{ verified: boolean; verifiedAt?: number } | null> {
     // This would call the Soroban contract's get_organization method
     // For now, returning a stub that should be implemented with actual contract call
-    this.logger.debug(`Querying verification status for org: ${organizationId}`);
+    this.logger.debug(
+      `Querying verification status for org: ${organizationId}`,
+    );
     // TODO: Implement actual Soroban contract query
     return null;
   }
@@ -300,7 +304,11 @@ export class SorobanService {
     );
 
     // Fetch failed jobs from DLQ
-    const failedJobs = await this.dlq.getJobs(['failed'], offset, offset + batchSize - 1);
+    const failedJobs = await this.dlq.getJobs(
+      ['failed'],
+      offset,
+      offset + batchSize - 1,
+    );
 
     const result = {
       dryRun,
