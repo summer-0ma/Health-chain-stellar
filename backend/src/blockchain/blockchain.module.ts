@@ -52,7 +52,7 @@ import { SorobanService } from './services/soroban.service';
         }),
         inject: [ConfigService],
       },
-    ]),
+    ),
   ],
   providers: [
     SorobanService,
@@ -63,9 +63,10 @@ import { SorobanService } from './services/soroban.service';
     SorobanDlqProcessor,
     FailedSorobanTxService,
     BlockchainHealthService,
+    QueueMetricsService,
     AdminGuard,
   ],
   controllers: [BlockchainController],
-  exports: [SorobanService],
+  exports: [SorobanService, QueueMetricsService],
 })
 export class BlockchainModule {}
